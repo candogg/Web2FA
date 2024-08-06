@@ -1,0 +1,427 @@
+﻿@page "/login"
+
+@using Web2FA.Backend.Shared.Constants
+@using Web2FA.Backend.Shared.Extensions;
+@using Blazored.LocalStorage
+@using Web2FA.Backend.Shared.Payload.Derived
+@using Web2FA.Web.WebUI.Constants
+@using Web2FA.Web.WebUI.Services.Derived
+@layout EmptyLayout
+
+@inject ISnackbar SnackBar
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject ILocalStorageService LocalStorage
+
+<PageTitle>Web2FA Giriş</PageTitle>
+
+<MudStack AlignItems="AlignItems.Center" Class="d-flex justify-center flex-grow-1 gap-8">
+    <MudPaper Width="65%" MaxWidth="600px" Elevation="10" Class="pa-10 rounded-xl" Outlined="false">
+        <MudText Typo="Typo.h6" Class="mb-4">Giriş</MudText>
+
+        <MudTextField T="string" @ref="userNameField" @bind-Value="userNameValue" Placeholder="Kullanıcı Adı" Variant="Variant.Outlined" Class="mb-4" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Person" OnKeyUp="CheckEnterPressed" Immediate="true" Disabled="loginResponsePayload.IsTFAEnabled" />
+
+        <MudTextField T="string" @ref="passwordField" @bind-Value="passwordValue" Placeholder="Parola" Variant="Variant.Outlined" InputType="InputType.Password" Class="mb-4" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Lock" OnKeyUp="CheckEnterPressed" Immediate="true" Disabled="loginResponsePayload.IsTFAEnabled" />
+
+        @if (loginResponsePayload.IsTFAEnabled)
+        {
+            if (!loginResponsePayload.IsTFAConfirmed && loginResponsePayload.TFAQrCode != null && loginResponsePayload.TFAQrCode.IsNotNullOrEmpty())
+            {
+                <MudPaper Style="width: 100%; text-align: center;" Class="align-content-center" Elevation="0">
+                    <MudImage Src="@qrCodeValue" Class="ma-5" Width="200"></MudImage>
+                </MudPaper>
+            }
+
+            <MudTextField T="string" @ref="tfaCodeField" @bind-Value="tfaCodeValue" Placeholder="2 Faktörlü Doğrulama Kodu" Variant="Variant.Outlined" Class="mb-4" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Password" OnKeyUp="CheckEnterPressed" Immediate="true" MaxLength="6" />
+        }
+
+        <div style="margin-top: 10px;"></div>
+
+        <MudPaper Elevation="0">
+
+            @if (captchaImageValue != null)
+            {
+                <MudPaper Elevation="0" Square="true" Class="d-flex align-center gap-4">
+                    <img src="@($"data:image/png;base64,{captchaImageValue}")" alt="Image" style="width: 200px; height: 80px" />
+
+                    <MudTooltip Text="Yenile" Style="">
+                        <MudFab Color="Color.Default" Size="Size.Small" StartIcon="@Icons.Material.Filled.Refresh" OnClick=@(() => RefreshCaptchaClicked()) />
+                    </MudTooltip>
+                </MudPaper>
+            }
+            else
+            {
+                <MudPaper Elevation="0" Width="200px" Height="80px" Square="true" Class="d-flex align-center gap-4">
+                    <MudProgressCircular Size="Size.Medium" Indeterminate="true" />
+                </MudPaper>
+            }
+
+        </MudPaper>
+
+        <div style="margin-top: 10px;"></div>
+
+        <MudPaper Class="mb-4" Elevation="0">
+            <MudTextField T="string" @ref="captchaField" @bind-Value="captchaValue" Placeholder="Sayıların Toplamı" Variant="Variant.Outlined" Class="mb-4" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Calculate" OnKeyUp="CheckEnterPressed" Immediate="true" MaxLength="6" />
+        </MudPaper>
+
+        <div style="margin-top: 10px;"></div>
+
+        <MudButton Disabled="@processing" @ref="loginButtonField" Color="Color.Success" Variant="Variant.Filled" Class="mb-2" OnClick="OnLoginClicked" Style="width: 130px;">
+            @if (processing)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                <MudText Class="ms-2">İşleniyor...</MudText>
+            }
+            else
+            {
+                <MudIcon Class="ms-n1" Icon="@Icons.Material.Filled.Login"></MudIcon>
+                <MudText Class="ms-2">Giriş</MudText>
+            }
+        </MudButton>
+        @if (loginResponsePayload.IsTFAEnabled)
+        {
+            <MudButton Disabled="@processing" @ref="cancelButtonField" Color="Color.Error" Variant="Variant.Filled" Class="mb-2 ml-5" OnClick="OnLoginClicked" Style="width: 130px;">
+                @if (processing)
+                {
+                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                    <MudText Class="ms-2">İşleniyor...</MudText>
+                }
+
+                else
+                {
+                    <MudIcon Class="ms-n1" Icon="@Icons.Material.Filled.Cancel"></MudIcon>
+                    <MudText Class="ms-2">İptal</MudText>
+                }
+            </MudButton>
+        }
+    </MudPaper>
+</MudStack>
+
+@code {
+    private string userNameValue = string.Empty;
+    private string passwordValue = string.Empty;
+    private string captchaValue = string.Empty;
+    private string tfaCodeValue = string.Empty;
+    private MudTextField<string> captchaField = null!;
+    private MudTextField<string> tfaCodeField = null!;
+    private MudTextField<string> userNameField = null!;
+    private MudTextField<string> passwordField = null!;
+    private MudButton loginButtonField = null!;
+    private MudButton cancelButtonField = null!;
+    private string? captchaImageValue;
+    private string? captchaId;
+    private LoginResponsePayload loginResponsePayload = new LoginResponsePayload();
+    private string? qrCodeValue;
+
+    private bool processing = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LocalStorage.RemoveItemAsync("Web2FAData");
+        await LoadCaptchaAsync();
+
+        await userNameField.FocusAsync();
+
+        StateHasChanged();
+    }
+
+    private void CheckEnterPressed(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+        {
+            OnLoginClicked();
+        }
+    }
+
+    private async Task RefreshCaptchaClicked()
+    {
+        await LoadCaptchaAsync();
+
+        StateHasChanged();
+    }
+
+    private async void OnLoginClicked()
+    {
+        if (userNameValue.IsNullOrEmpty() || passwordValue.IsNullOrEmpty() || captchaValue.IsNullOrEmpty() || (loginResponsePayload.IsTFAEnabled && (tfaCodeValue == null || tfaCodeValue.IsNullOrEmpty())))
+        {
+            SnackBar.Add("Kullanıcı adı, parola, doğrulama kodu ve captcha alanları boş bırakılamaz!", Severity.Error);
+
+            await LoadCaptchaAsync();
+
+            StateHasChanged();
+
+            if (userNameValue == null || userNameValue.IsNullOrEmpty())
+            {
+                await userNameField.FocusAsync();
+            }
+            else if (passwordValue == null || passwordValue.IsNullOrEmpty())
+            {
+                await passwordField.FocusAsync();
+            }
+            else if (loginResponsePayload.IsTFAEnabled && (tfaCodeValue == null || tfaCodeValue.IsNullOrEmpty()))
+            {
+                await tfaCodeField.FocusAsync();
+            }
+            else if (captchaValue == null || captchaValue.IsNullOrEmpty())
+            {
+                await captchaField.FocusAsync();
+            }
+
+            StateHasChanged();
+
+            return;
+        }
+
+        if (!int.TryParse(captchaValue, out var captchaIntVal) || captchaId == null)
+        {
+            SnackBar.Add("Hatalı captcha!", Severity.Error);
+
+            await LoadCaptchaAsync();
+            await captchaField.FocusAsync();
+
+            StateHasChanged();
+
+            return;
+        }
+
+        if (loginResponsePayload.IsTFAEnabled && !int.TryParse(tfaCodeValue, out var tfaCodeIntVal))
+        {
+            SnackBar.Add("Hatalı doğrulama kodu!", Severity.Error);
+
+            await LoadCaptchaAsync();
+            await tfaCodeField.FocusAsync();
+
+            StateHasChanged();
+
+            return;
+        }
+
+        if (loginResponsePayload.IsTFAEnabled)
+        {
+            OnLoginClickedWithTFA();
+
+            return;
+        }
+
+        var loginRequest = new LoginRequestPayload
+            {
+                Username = userNameValue,
+                Password = passwordValue,
+                CaptchaId = captchaId,
+                CaptchaResult = captchaIntVal,
+            };
+
+        processing = true;
+        StateHasChanged();
+
+        var loginResult = await HttpService<ResponsePayload<LoginResponsePayload, object>, LoginRequestPayload>.DerivedObject.PostAsync(loginRequest, $"{UIConstants.ApiUrl}api/Web2FA/User/Login", CancellationToken.None);
+
+        processing = false;
+        StateHasChanged();
+
+        if (loginResult == null || !loginResult.IsSuccess || loginResult.Data == null || !loginResult.Data.IsAuthenticated)
+        {
+            SnackBar.Add("Giriş başarısız!", Severity.Error);
+
+            await LoadCaptchaAsync();
+
+            StateHasChanged();
+
+            return;
+        }
+
+        loginResponsePayload = loginResult.Data;
+
+        //Login başarılı
+
+        SnackBar.Clear();
+
+        if (!loginResponsePayload.IsTFAEnabled && loginResponsePayload.AuthenticationToken != null && loginResponsePayload.AuthenticationToken.IsNotNullOrEmpty())
+        {
+            await LocalStorage.SetItemAsync<LoginResponsePayload>("Web2FAData", loginResult.Data);
+
+            Navigation.NavigateTo("/");
+
+            return;
+        }
+        else if (loginResponsePayload.IsTFAEnabled && loginResponsePayload.TFAQrCode != null && loginResponsePayload.TFAQrCode.IsNotNullOrEmpty())
+        {
+            captchaValue = string.Empty;
+
+            await LoadCaptchaAsync();
+
+            qrCodeValue = $"data:image/png;base64,{loginResponsePayload.TFAQrCode}";
+
+            StateHasChanged();
+
+            await tfaCodeField.FocusAsync();
+        }
+        else if (loginResponsePayload.IsTFAEnabled)
+        {
+            await LoadCaptchaAsync();
+
+            StateHasChanged();
+
+            await tfaCodeField.FocusAsync();
+        }
+        else
+        {
+            await LoadCaptchaAsync();
+        }
+
+        StateHasChanged();
+    }
+
+    private async void OnLoginClickedWithTFA()
+    {
+        if (userNameValue.IsNullOrEmpty() || passwordValue.IsNullOrEmpty() || captchaValue.IsNullOrEmpty() || (loginResponsePayload.IsTFAEnabled && (tfaCodeValue == null || tfaCodeValue.IsNullOrEmpty())))
+        {
+            SnackBar.Add("Kullanıcı adı, parola, doğrulama kodu ve captcha alanları boş bırakılamaz!", Severity.Error);
+
+            StateHasChanged();
+
+            await LoadCaptchaAsync();
+
+            if (userNameValue == null || userNameValue.IsNullOrEmpty())
+            {
+                await userNameField.FocusAsync();
+            }
+            else if (passwordValue == null || passwordValue.IsNullOrEmpty())
+            {
+                await passwordField.FocusAsync();
+            }
+            else if (loginResponsePayload.IsTFAEnabled && (tfaCodeValue == null || tfaCodeValue.IsNullOrEmpty()))
+            {
+                await tfaCodeField.FocusAsync();
+            }
+            else if (captchaValue == null || captchaValue.IsNullOrEmpty())
+            {
+                await captchaField.FocusAsync();
+            }
+
+            StateHasChanged();
+
+            return;
+        }
+
+        if (!int.TryParse(captchaValue, out var captchaIntVal) || captchaId == null)
+        {
+            SnackBar.Add("Hatalı captcha!", Severity.Error);
+
+            await LoadCaptchaAsync();
+            await captchaField.FocusAsync();
+
+            StateHasChanged();
+
+            return;
+        }
+
+        if (loginResponsePayload.IsTFAEnabled && !int.TryParse(tfaCodeValue, out var tfaCodeIntVal))
+        {
+            SnackBar.Add("Hatalı doğrulama kodu!", Severity.Error);
+
+            await LoadCaptchaAsync();
+            await tfaCodeField.FocusAsync();
+
+            StateHasChanged();
+
+            return;
+        }
+
+        var loginRequest = new LoginRequestPayload
+            {
+                Username = userNameValue,
+                Password = passwordValue,
+                CaptchaId = captchaId,
+                CaptchaResult = captchaIntVal,
+                TFACode = tfaCodeValue
+            };
+
+        processing = true;
+        StateHasChanged();
+
+        var loginResult = await HttpService<ResponsePayload<LoginResponsePayload, object>, LoginRequestPayload>.DerivedObject.PostAsync(loginRequest, $"{UIConstants.ApiUrl}api/Web2FA/User/LoginWithTFA", CancellationToken.None);
+
+        processing = false;
+        StateHasChanged();
+
+        if (loginResult == null || !loginResult.IsSuccess || loginResult.Data == null || !loginResult.Data.IsAuthenticated)
+        {
+            SnackBar.Add("Giriş başarısız!", Severity.Error);
+
+            await LoadCaptchaAsync();
+
+            StateHasChanged();
+
+            return;
+        }
+
+        loginResponsePayload = loginResult.Data;
+
+        //Login başarılı
+
+        SnackBar.Clear();
+
+        if (loginResponsePayload.IsAuthenticated)
+        {
+            await LocalStorage.SetItemAsync<LoginResponsePayload>("Web2FAData", loginResult.Data);
+
+            Navigation.NavigateTo("/");
+
+            return;
+        }
+
+        await LoadCaptchaAsync();
+        
+        StateHasChanged();
+    }
+
+    private async Task LoadCaptchaAsync()
+    {
+        try
+        {
+            captchaId = null;
+            captchaImageValue = null;
+            captchaValue = string.Empty;
+
+            var captchaPayload = await HttpService<ResponsePayload<CaptchaPayload, object>, object>.DerivedObject.GetAsync($"{UIConstants.ApiUrl}api/Web2FA/User/GetCaptcha", CancellationToken.None);
+
+            if (captchaPayload == null || !captchaPayload.IsSuccess || captchaPayload.Data == null)
+            {
+                SnackBar.Add("Captcha verileri alınamadı", Severity.Error);
+
+                StateHasChanged();
+
+                return;
+            }
+
+            captchaImageValue = captchaPayload.Data.CaptchaImage;
+            captchaId = captchaPayload.Data.CaptchaId;
+
+            StateHasChanged();
+        }
+        catch (Exception)
+        {
+            SnackBar.Add("Bir hata oluştu", Severity.Error);
+
+            StateHasChanged();
+        }
+    }
+
+    private async void OnCancelClicked()
+    {
+        userNameValue = string.Empty;
+        passwordValue = string.Empty;
+        tfaCodeValue = string.Empty;
+
+        await LoadCaptchaAsync();
+
+        loginResponsePayload = new LoginResponsePayload();
+
+        StateHasChanged();
+
+        await userNameField.FocusAsync();
+
+        StateHasChanged();
+    }
+}
