@@ -2,6 +2,9 @@
 
 namespace Web2FA.Web.WebUI.Constants
 {
+    /// <summary>
+    /// Author: Can DOĞU (CENTECH)
+    /// </summary>
     public static class UIConstants
     {
         private static string? apiUrl;

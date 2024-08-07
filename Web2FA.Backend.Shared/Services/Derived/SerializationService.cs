@@ -4,6 +4,9 @@ using Web2FA.Backend.Shared.Services.Base;
 
 namespace Web2FA.Backend.Shared.Services.Derived
 {
+    /// <summary>
+    /// Author: Can DOĞU (CENTECH)
+    /// </summary>
     public sealed class SerializationService : ServiceSingularBase<SerializationService>
     {
         public T? DeserializeObject<T>(object obj)

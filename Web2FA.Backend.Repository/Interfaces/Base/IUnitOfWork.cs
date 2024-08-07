@@ -2,6 +2,9 @@
 
 namespace Web2FA.Backend.Repository.Interfaces.Base
 {
+    /// <summary>
+    /// Author: Can DOĞU (CENTECH)
+    /// </summary>
     public interface IUnitOfWork
     {
         Task<int> CommitChangesAsync();

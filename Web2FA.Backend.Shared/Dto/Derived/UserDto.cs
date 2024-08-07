@@ -2,6 +2,9 @@
 
 namespace Web2FA.Backend.Shared.Dto.Derived
 {
+    /// <summary>
+    /// Author: Can DOĞU (CENTECH)
+    /// </summary>
     public sealed class UserDto : DtoBase
     {
         public string? Name { get; set; }

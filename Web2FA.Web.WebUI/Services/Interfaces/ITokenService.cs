@@ -2,6 +2,9 @@
 
 namespace Web2FA.Web.WebUI.Services.Interfaces
 {
+    /// <summary>
+    /// Author: Can DOĞU (CENTECH)
+    /// </summary>
     public interface ITokenService
     {
         Task<string> ControlTokenAsync();

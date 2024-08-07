@@ -11,6 +11,9 @@ using Web2FA.Backend.Shared.Services.Derived;
 
 namespace Web2FA.Backend.Service.Services.Derived
 {
+    /// <summary>
+    /// Author: Can DOĞU (CENTECH)
+    /// </summary>
     public sealed class TokenService : ServiceBase, ITokenService
     {
         public TokenService(IUnitOfWork unitOfWork) : base(unitOfWork)

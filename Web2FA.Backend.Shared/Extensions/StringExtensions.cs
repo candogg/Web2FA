@@ -3,6 +3,9 @@ using Web2FA.Backend.Shared.Services.Derived;
 
 namespace Web2FA.Backend.Shared.Extensions
 {
+    /// <summary>
+    /// Author: Can DOĞU (CENTECH)
+    /// </summary>
     public static class StringExtensions
     {
         private static readonly Dictionary<char, char> turkishToEnglishMap = new()

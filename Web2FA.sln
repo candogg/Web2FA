@@ -7,17 +7,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web", "Web", "{58FD6891-8E3
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Backend", "Backend", "{5581513B-4544-45B9-86AB-3FDCDC2BF0B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Web2FA.Backend.Model", "Web2FA.Backend.Model\Web2FA.Backend.Model.csproj", "{D95AC50F-DAC0-440A-BF52-BCD3CD760F1C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Web2FA.Backend.Model", "Web2FA.Backend.Model\Web2FA.Backend.Model.csproj", "{D95AC50F-DAC0-440A-BF52-BCD3CD760F1C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Web2FA.Backend.Repository", "Web2FA.Backend.Repository\Web2FA.Backend.Repository.csproj", "{9AA0C260-7649-41D1-82D4-8E83A23B3A50}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Web2FA.Backend.Repository", "Web2FA.Backend.Repository\Web2FA.Backend.Repository.csproj", "{9AA0C260-7649-41D1-82D4-8E83A23B3A50}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Web2FA.Backend.Shared", "Web2FA.Backend.Shared\Web2FA.Backend.Shared.csproj", "{5652A5C1-7F03-490E-9CB8-659F4D7F00BF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Web2FA.Backend.Shared", "Web2FA.Backend.Shared\Web2FA.Backend.Shared.csproj", "{5652A5C1-7F03-490E-9CB8-659F4D7F00BF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Web2FA.Backend.Service", "Web2FA.Backend.Service\Web2FA.Backend.Service.csproj", "{56E4B22E-5361-4E8F-AC35-740A9029E980}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Web2FA.Backend.Service", "Web2FA.Backend.Service\Web2FA.Backend.Service.csproj", "{56E4B22E-5361-4E8F-AC35-740A9029E980}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Web2FA.Backend.Api", "Web2FA.Backend.Api\Web2FA.Backend.Api.csproj", "{A098E92A-E7E9-45C9-8925-61E7D5D2410E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Web2FA.Backend.Api", "Web2FA.Backend.Api\Web2FA.Backend.Api.csproj", "{A098E92A-E7E9-45C9-8925-61E7D5D2410E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Web2FA.Web.WebUI", "Web2FA.Web.WebUI\Web2FA.Web.WebUI.csproj", "{D44E731B-6D9A-4937-8906-DD9C10545DE9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Web2FA.Web.WebUI", "Web2FA.Web.WebUI\Web2FA.Web.WebUI.csproj", "{D44E731B-6D9A-4937-8906-DD9C10545DE9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

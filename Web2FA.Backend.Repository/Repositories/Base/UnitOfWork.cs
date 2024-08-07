@@ -4,6 +4,9 @@ using Web2FA.Backend.Repository.Interfaces.Derived;
 
 namespace Web2FA.Backend.Repository.Repositories.Base
 {
+    /// <summary>
+    /// Author: Can DOĞU (CENTECH)
+    /// </summary>
     public class UnitOfWork : IUnitOfWork, IDisposable
     {
         private readonly Web2FAContext context;

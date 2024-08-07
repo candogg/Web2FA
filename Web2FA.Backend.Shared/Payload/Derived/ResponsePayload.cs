@@ -2,7 +2,10 @@
 
 namespace Web2FA.Backend.Shared.Payload.Derived
 {
-    public class ResponsePayload<TData, TAdditionalData> : PayloadBase
+    /// <summary>
+    /// Author: Can DOĞU (CENTECH)
+    /// </summary>
+    public sealed class ResponsePayload<TData, TAdditionalData> : PayloadBase
     {
         public bool IsSuccess { get; set; }
         public string? Message { get; set; }

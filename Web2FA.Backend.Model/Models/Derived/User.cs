@@ -4,6 +4,11 @@ namespace Web2FA.Backend.Model.Models.Derived
 {
     public partial class User : EntityBase
     {
+        public User()
+        {
+            UserAuthentications = new HashSet<UserAuthentication>();
+        }
+
         public string? Name { get; set; }
         public string? Surname { get; set; }
         public string Username { get; set; } = null!;
@@ -13,5 +18,6 @@ namespace Web2FA.Backend.Model.Models.Derived
         public string? TFASecret { get; set; }
         public bool IsBlocked { get; set; }
         public DateTime? BlockedUntil { get; set; }
+        public virtual ICollection<UserAuthentication> UserAuthentications { get; set; }
     }
 }

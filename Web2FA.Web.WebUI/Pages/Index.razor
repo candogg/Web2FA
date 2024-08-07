@@ -1,7 +1,98 @@
 ﻿@page "/"
+@using Web2FA.Backend.Shared.Extensions
+@using Web2FA.Backend.Shared.Payload.Derived
+@using Web2FA.Web.WebUI.Constants
+@using Web2FA.Web.WebUI.Services.Derived
+@using Web2FA.Web.WebUI.Services.Interfaces
 
-<PageTitle>Index</PageTitle>
+@inject ITokenService TokenService
+@inject NavigationManager Navigation
+@inject ISnackbar SnackBar
 
-<MudText Typo="Typo.h3" GutterBottom="true">Hello, world!</MudText>
-<MudText Class="mb-8">Welcome to your new app, powered by MudBlazor!</MudText>
-<MudAlert Severity="Severity.Normal">You can find documentation and examples on our website here: <MudLink Href="https://mudblazor.com" Typo="Typo.body2" Color="Color.Inherit"><b>www.mudblazor.com</b></MudLink></MudAlert>
+<PageTitle>Anasayfa</PageTitle>
+
+<MudButton Variant="Variant.Filled" Color="Color.Error" Style="width: 300px;" OnClick="ResetUserAuthenticator" Disabled="@processing">
+    @if (processing)
+    {
+        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+        <MudText Class="ms-2">İşleniyor...</MudText>
+    }
+    else
+    {
+        <MudIcon Class="ms-n1" Icon="@Icons.Material.Filled.Cancel"></MudIcon>
+        <MudText Class="ms-2">Authenticator Kodumu Resetle</MudText>
+    }
+</MudButton>
+
+<MudMessageBox @ref="mbox" Title="Dikkat" CancelText="Vazgeç">
+    <MessageContent>
+        <MudText Class="mr-16">Authenticator kodunu resetlemek istediğinizden emin misiniz?</MudText>
+    </MessageContent>
+    <YesButton>
+        <MudButton Color="Color.Error" Variant="Variant.Filled" Style="width: 130px;" Class="ml-5" StartIcon="@Icons.Material.Filled.Cancel">Resetle</MudButton>
+    </YesButton>
+</MudMessageBox>
+
+@code{
+    private string? authenticationToken;
+    private bool processing = false;
+    private MudMessageBox? mbox { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ControlSecurityToken();
+
+        await base.OnInitializedAsync();
+    }
+
+    private async Task ControlSecurityToken()
+    {
+        authenticationToken = await TokenService.ControlTokenAsync();
+
+        if (authenticationToken.IsNullOrEmpty())
+        {
+            Navigation.NavigateTo("/login");
+
+            return;
+        }
+
+        var tokenInfo = await TokenService.GetClaimAsync();
+
+        if (tokenInfo == default || tokenInfo == null)
+        {
+            Navigation.NavigateTo("/login");
+
+            return;
+        }
+    }
+
+    public async Task ResetUserAuthenticator()
+    {
+        if (mbox == null) return;
+
+        processing = true;
+        StateHasChanged();
+
+        bool? result = await mbox.Show();
+
+        if (result == true)
+        {
+            var resetResult = await HttpService<ResponsePayload<object, object>, object>.DerivedObject.GetAsync($"{UIConstants.ApiUrl}api/Web2FA/User/ResetAuthenticator", CancellationToken.None, authenticationToken);
+
+            if (resetResult == null || !resetResult.IsSuccess)
+            {
+                SnackBar.Add("Authenticator kodu resetlenemedi!", Severity.Error);
+
+                processing = false;
+                StateHasChanged();
+
+                return;
+            }
+
+            SnackBar.Add("Authenticator kodu başarıyla resetlendi", Severity.Success);
+        }
+
+        processing = false;
+        StateHasChanged();
+    }
+}

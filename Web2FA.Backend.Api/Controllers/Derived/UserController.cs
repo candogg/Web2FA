@@ -7,6 +7,9 @@ using Web2FA.Backend.Shared.Services.Derived;
 
 namespace Web2FA.Backend.Api.Controllers.Derived
 {
+    /// <summary>
+    /// Author: Can DOĞU (CENTECH)
+    /// </summary>
     public class UserController : ApiBase
     {
         private readonly IUserService userService;
@@ -88,6 +91,22 @@ namespace Web2FA.Backend.Api.Controllers.Derived
             }
 
             return cResult.IsSuccess ? Ok(cResult) : BadRequest(cResult);
+        }
+
+        [HttpGet("ResetAuthenticator")]
+        [Authorize]
+        public async Task<ActionResult> ResetAuthenticator()
+        {
+            var userIdClaim = User.FindFirst(x => x.Type == "UserId")?.Value;
+
+            if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+            {
+                return BadRequest();
+            }
+
+            var vResult = await userService.ResetAuthenticatorAsync(userId);
+
+            return vResult.IsSuccess ? Ok(vResult) : BadRequest(vResult);
         }
     }
 }

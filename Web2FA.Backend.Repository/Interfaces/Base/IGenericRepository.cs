@@ -3,6 +3,9 @@ using Web2FA.Backend.Shared.Filters.Base;
 
 namespace Web2FA.Backend.Repository.Interfaces.Base
 {
+    /// <summary>
+    /// Author: Can DOĞU (CENTECH)
+    /// </summary>
     public interface IGenericRepository<T> where T : class, new()
     {
         Task<T?> AddAsync(T pEntity);

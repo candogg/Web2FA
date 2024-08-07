@@ -47,7 +47,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidIssuer = "Centech Bilişim",
-            ValidAudience = "MedLOG",
+            ValidAudience = "Web2FA",
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(ApplicationConstants.ApplicationKey)),
             ClockSkew = TimeSpan.Zero

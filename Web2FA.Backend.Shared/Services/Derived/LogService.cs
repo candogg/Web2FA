@@ -4,6 +4,9 @@ using Web2FA.Backend.Shared.Services.Base;
 
 namespace Web2FA.Backend.Shared.Services.Derived
 {
+    /// <summary>
+    /// Author: Can DOĞU (CENTECH)
+    /// </summary>
     public sealed class LogService : ServiceSingularBase<LogService>
     {
         public void Write(string log, int exceptionId, EventLogEntryType eventType = EventLogEntryType.Error, object? data = null, string? methodName = "")

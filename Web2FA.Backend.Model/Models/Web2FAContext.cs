@@ -15,6 +15,7 @@ namespace Web2FA.Backend.Model.Models
         }
 
         public virtual DbSet<User> Users { get; set; } = null!;
+        public virtual DbSet<UserAuthentication> UserAuthentications { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -29,6 +30,7 @@ namespace Web2FA.Backend.Model.Models
         {
             modelBuilder.Entity<User>(entity =>
             {
+                entity.Property(e => e.BlockedUntil).HasColumnType("datetime");
                 entity.Property(e => e.CreateDate).HasColumnType("datetime");
 
                 entity.Property(e => e.ModifyDate).HasColumnType("datetime");
@@ -52,9 +54,26 @@ namespace Web2FA.Backend.Model.Models
                 entity.Property(e => e.Username)
                     .HasMaxLength(255)
                     .IsUnicode(false);
-            });
 
-            OnModelCreatingPartial(modelBuilder);
+                modelBuilder.Entity<UserAuthentication>(entity =>
+                {
+                    entity.Property(e => e.CreateDate).HasColumnType("datetime");
+
+                    entity.Property(e => e.IpAddress)
+                        .HasMaxLength(100)
+                        .IsUnicode(false);
+
+                    entity.Property(e => e.ModifyDate).HasColumnType("datetime");
+
+                    entity.HasOne(d => d.User)
+                        .WithMany(p => p.UserAuthentications)
+                        .HasForeignKey(d => d.UserId)
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("FK_UserAuthentications_Users");
+                });
+
+                OnModelCreatingPartial(modelBuilder);
+            });
         }
 
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

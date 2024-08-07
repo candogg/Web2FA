@@ -8,6 +8,9 @@ using Web2FA.Backend.Shared.Services.Derived;
 
 namespace Web2FA.Backend.Repository.Repositories.Base
 {
+    /// <summary>
+    /// Author: Can DOĞU (CENTECH)
+    /// </summary>
     public abstract class GenericRepositoryBase<T, Context> : IGenericRepository<T>
         where T : class, new()
         where Context : Web2FAContext, new()

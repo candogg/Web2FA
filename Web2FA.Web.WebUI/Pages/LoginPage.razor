@@ -12,6 +12,7 @@
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject ILocalStorageService LocalStorage
+@inject IDialogService DialogService
 
 <PageTitle>Web2FA Giriş</PageTitle>
 
@@ -80,7 +81,7 @@
         </MudButton>
         @if (loginResponsePayload.IsTFAEnabled)
         {
-            <MudButton Disabled="@processing" @ref="cancelButtonField" Color="Color.Error" Variant="Variant.Filled" Class="mb-2 ml-5" OnClick="OnLoginClicked" Style="width: 130px;">
+            <MudButton Disabled="@processing" @ref="cancelButtonField" Color="Color.Error" Variant="Variant.Filled" Class="mb-2 ml-5" OnClick="OnCancelClicked" Style="width: 130px;">
                 @if (processing)
                 {
                     <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
@@ -216,15 +217,13 @@
 
         var loginResult = await HttpService<ResponsePayload<LoginResponsePayload, object>, LoginRequestPayload>.DerivedObject.PostAsync(loginRequest, $"{UIConstants.ApiUrl}api/Web2FA/User/Login", CancellationToken.None);
 
-        processing = false;
-        StateHasChanged();
-
         if (loginResult == null || !loginResult.IsSuccess || loginResult.Data == null || !loginResult.Data.IsAuthenticated)
         {
             SnackBar.Add("Giriş başarısız!", Severity.Error);
 
             await LoadCaptchaAsync();
 
+            processing = false;
             StateHasChanged();
 
             return;
@@ -238,9 +237,13 @@
 
         if (!loginResponsePayload.IsTFAEnabled && loginResponsePayload.AuthenticationToken != null && loginResponsePayload.AuthenticationToken.IsNotNullOrEmpty())
         {
-            await LocalStorage.SetItemAsync<LoginResponsePayload>("Web2FAData", loginResult.Data);
+            var dParameters = new DialogParameters();
 
-            Navigation.NavigateTo("/");
+            dParameters.Add("authenticationData", loginResponsePayload);
+
+            var options = new DialogOptions { CloseOnEscapeKey = false, NoHeader = true, FullScreen = false, DisableBackdropClick = true, Position = DialogPosition.Center, CloseButton = false };
+
+            await DialogService.Show<LoginSuccessfulDialog>(string.Empty, dParameters, options).Result;
 
             return;
         }
@@ -269,6 +272,7 @@
             await LoadCaptchaAsync();
         }
 
+        processing = false;
         StateHasChanged();
     }
 
@@ -342,15 +346,13 @@
 
         var loginResult = await HttpService<ResponsePayload<LoginResponsePayload, object>, LoginRequestPayload>.DerivedObject.PostAsync(loginRequest, $"{UIConstants.ApiUrl}api/Web2FA/User/LoginWithTFA", CancellationToken.None);
 
-        processing = false;
-        StateHasChanged();
-
         if (loginResult == null || !loginResult.IsSuccess || loginResult.Data == null || !loginResult.Data.IsAuthenticated)
         {
             SnackBar.Add("Giriş başarısız!", Severity.Error);
 
             await LoadCaptchaAsync();
 
+            processing = false;
             StateHasChanged();
 
             return;
@@ -364,15 +366,22 @@
 
         if (loginResponsePayload.IsAuthenticated)
         {
-            await LocalStorage.SetItemAsync<LoginResponsePayload>("Web2FAData", loginResult.Data);
+            var dParameters = new DialogParameters();
 
-            Navigation.NavigateTo("/");
+            dParameters.Add("authenticationData", loginResponsePayload);
+
+            var options = new DialogOptions { CloseOnEscapeKey = false, NoHeader = true, FullScreen = false, DisableBackdropClick = true, Position = DialogPosition.Center, CloseButton = false };
+
+            await DialogService.Show<LoginSuccessfulDialog>(string.Empty, dParameters, options).Result;
 
             return;
         }
 
+        processing = false;
+        StateHasChanged();
+
         await LoadCaptchaAsync();
-        
+
         StateHasChanged();
     }
 

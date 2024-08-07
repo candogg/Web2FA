@@ -3,6 +3,9 @@ using Web2FA.Backend.Shared.Services.Base;
 
 namespace Web2FA.Backend.Shared.Services.Derived
 {
+    /// <summary>
+    /// Author: Can DOĞU (CENTECH)
+    /// </summary>
     public sealed class OtpService : ServiceSingularBase<OtpService>
     {
         public bool ConfirmOtpCode(string userKey, string code, int validSeconds = 60, int totpSize = 6)
@@ -11,9 +14,9 @@ namespace Web2FA.Backend.Shared.Services.Derived
             {
                 var sBytes = Base32Encoding.ToBytes(userKey);
 
-                var totp = new Totp(secretKey: sBytes, totpSize: totpSize, mode: OtpHashMode.Sha256, step: validSeconds);
+                var totp = new Totp(secretKey: sBytes);
 
-                return totp.VerifyTotp(DateTime.Now, code, out _, VerificationWindow.RfcSpecifiedNetworkDelay);
+                return totp.VerifyTotp(code, out _, VerificationWindow.RfcSpecifiedNetworkDelay);
             }
             catch (Exception ex)
             {

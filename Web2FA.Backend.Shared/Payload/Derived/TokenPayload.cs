@@ -1,6 +1,9 @@
 ﻿namespace Web2FA.Backend.Shared.Payload.Derived
 {
-    public class TokenPayload
+    /// <summary>
+    /// Author: Can DOĞU (CENTECH)
+    /// </summary>
+    public sealed class TokenPayload
     {
         public string UserId { get; set; } = null!;
         public string Username { get; set; } = null!;

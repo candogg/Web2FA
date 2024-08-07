@@ -1,0 +1,29 @@
+﻿@using Blazored.LocalStorage
+@using Web2FA.Backend.Shared.Payload.Derived
+
+@inject NavigationManager Navigation
+@inject ILocalStorageService LocalStorage
+
+<MudDialog>
+    <DialogContent>
+        Giriş başarılı. Yönlendiriliyorsunuz...
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private MudDialogInstance? MudDialog { get; set; }
+
+    [Parameter] public LoginResponsePayload? authenticationData { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LocalStorage.SetItemAsync<LoginResponsePayload>("Web2FAData", authenticationData);
+
+        await Task.Delay(TimeSpan.FromSeconds(5));
+
+        Navigation.NavigateTo("/");
+
+        await base.OnInitializedAsync();
+    }
+}

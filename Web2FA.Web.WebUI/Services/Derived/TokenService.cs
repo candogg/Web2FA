@@ -7,6 +7,9 @@ using Web2FA.Web.WebUI.Services.Interfaces;
 
 namespace Web2FA.Web.WebUI.Services.Derived
 {
+    /// <summary>
+    /// Author: Can DOĞU (CENTECH)
+    /// </summary>
     public sealed class TokenService : ITokenService
     {
         private readonly ILocalStorageService localStorageService;

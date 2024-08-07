@@ -3,7 +3,10 @@ using Web2FA.Backend.Shared.Services.Base;
 
 namespace Web2FA.Backend.Shared.Services.Derived
 {
-    public class QrCodeService : ServiceSingularBase<QrCodeService>
+    /// <summary>
+    /// Author: Can DOĞU (CENTECH)
+    /// </summary>
+    public sealed class QrCodeService : ServiceSingularBase<QrCodeService>
     {
         public string GenerateQrCode(string userName, string appName, string secretKey, string issuer)
         {

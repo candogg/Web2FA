@@ -2,6 +2,9 @@
 
 namespace Web2FA.Backend.Shared.Extensions
 {
+    /// <summary>
+    /// Author: Can DOĞU (CENTECH)
+    /// </summary>
     public static class QueryableExtensions
     {
         public static IQueryable<T> OrderByPropertyOrField<T>(this IQueryable<T> queryable, string propertyOrFieldName, bool ascending = true)

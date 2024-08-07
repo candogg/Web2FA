@@ -6,7 +6,10 @@ using Web2FA.Backend.Shared.Services.Derived;
 
 namespace Web2FA.Web.WebUI.Services.Derived
 {
-    public class HttpService<TResponse, TRequest> : ServiceSingularBase<HttpService<TResponse, TRequest>>
+    /// <summary>
+    /// Author: Can DOĞU (CENTECH)
+    /// </summary>
+    public sealed class HttpService<TResponse, TRequest> : ServiceSingularBase<HttpService<TResponse, TRequest>>
     {
         public async Task<TResponse?> PostAsync(TRequest requestItem, string url, CancellationToken continuationToken, string? authentication = null)
         {

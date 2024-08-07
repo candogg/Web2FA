@@ -6,6 +6,9 @@ using Web2FA.Backend.Shared.Services.Base;
 
 namespace Web2FA.Backend.Shared.Services.Derived
 {
+    /// <summary>
+    /// Author: Can DOĞU (CENTECH)
+    /// </summary>
     public sealed class EncryptionService : ServiceSingularBase<EncryptionService>
     {
         public string EncryptString(string input)
