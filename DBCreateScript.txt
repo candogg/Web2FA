@@ -1,0 +1,57 @@
+USE [Web2FA]
+GO
+/****** Object:  Table [dbo].[UserAuthentications]    Script Date: 7.08.2024 13:52:30 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[UserAuthentications](
+	[Id] [bigint] IDENTITY(1,1) NOT NULL,
+	[UserId] [bigint] NOT NULL,
+	[IpAddress] [varchar](100) NOT NULL,
+	[IsAuthenticated] [bit] NULL,
+	[IsDeleted] [bit] NOT NULL,
+	[CreateDate] [datetime] NOT NULL,
+	[ModifyDate] [datetime] NOT NULL,
+ CONSTRAINT [PK_UserAuthentications] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Users]    Script Date: 7.08.2024 13:52:30 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Users](
+	[Id] [bigint] IDENTITY(1,1) NOT NULL,
+	[Name] [varchar](255) NULL,
+	[Surname] [varchar](255) NULL,
+	[Username] [varchar](255) NOT NULL,
+	[Password] [varchar](1000) NOT NULL,
+	[IsTFAEnabled] [bit] NOT NULL,
+	[IsTFAConfirmed] [bit] NULL,
+	[TFASecret] [varchar](255) NULL,
+	[IsBlocked] [bit] NOT NULL,
+	[BlockedUntil] [datetime] NULL,
+	[IsDeleted] [bit] NOT NULL,
+	[CreateDate] [datetime] NOT NULL,
+	[ModifyDate] [datetime] NOT NULL,
+ CONSTRAINT [PK_Users] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+SET IDENTITY_INSERT [dbo].[Users] ON 
+GO
+INSERT [dbo].[Users] ([Id], [Name], [Surname], [Username], [Password], [IsTFAEnabled], [IsTFAConfirmed], [TFASecret], [IsBlocked], [BlockedUntil], [IsDeleted], [CreateDate], [ModifyDate]) VALUES (1, N'Can', N'DOGU', N'candogu', N'8d3ab15e89e3e765025b08216b7f4ac60c292e6544f06c411c300aa68093146e', 1, 1, N'BZ2IHXSDQKPBCYJKXRST6UWMZX5IDQLA', 0, NULL, 0, CAST(N'2024-01-01T00:00:00.000' AS DateTime), CAST(N'2024-08-07T10:27:15.560' AS DateTime))
+GO
+SET IDENTITY_INSERT [dbo].[Users] OFF
+GO
+ALTER TABLE [dbo].[UserAuthentications]  WITH CHECK ADD  CONSTRAINT [FK_UserAuthentications_Users] FOREIGN KEY([UserId])
+REFERENCES [dbo].[Users] ([Id])
+GO
+ALTER TABLE [dbo].[UserAuthentications] CHECK CONSTRAINT [FK_UserAuthentications_Users]
+GO
